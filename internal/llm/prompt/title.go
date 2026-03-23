@@ -1,6 +1,6 @@
 package prompt
 
-import "github.com/opencode-ai/teamcode/internal/llm/models"
+import "github.com/ETEllis/teamcode/internal/llm/models"
 
 func TitlePrompt(_ models.ModelProvider) string {
 	return `you will generate a short title based on the first message a user begins a conversation with

@@ -6,12 +6,12 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
-	"github.com/opencode-ai/teamcode/internal/config"
-	"github.com/opencode-ai/teamcode/internal/message"
-	"github.com/opencode-ai/teamcode/internal/session"
-	"github.com/opencode-ai/teamcode/internal/tui/styles"
-	"github.com/opencode-ai/teamcode/internal/tui/theme"
-	"github.com/opencode-ai/teamcode/internal/version"
+	"github.com/ETEllis/teamcode/internal/config"
+	"github.com/ETEllis/teamcode/internal/message"
+	"github.com/ETEllis/teamcode/internal/session"
+	"github.com/ETEllis/teamcode/internal/tui/styles"
+	"github.com/ETEllis/teamcode/internal/tui/theme"
+	"github.com/ETEllis/teamcode/internal/version"
 )
 
 type SendMsg struct {
@@ -120,7 +120,7 @@ func logo(width int) string {
 }
 
 func repo(width int) string {
-	repo := "https://github.com/opencode-ai/teamcode"
+	repo := "https://github.com/ETEllis/teamcode"
 	t := theme.CurrentTheme()
 
 	return styles.BaseStyle().

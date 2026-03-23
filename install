@@ -18,8 +18,8 @@ if ! command -v go >/dev/null 2>&1; then
 fi
 
 # Install using go install
-echo -e "${GREEN}Running: go install github.com/opencode-ai/teamcode@latest${NC}"
-go install github.com/opencode-ai/teamcode@latest
+echo -e "${GREEN}Running: go install github.com/ETEllis/teamcode@latest${NC}"
+go install github.com/ETEllis/teamcode@latest
 
 # Verify installation
 if command -v teamcode >/dev/null 2>&1; then

@@ -5,7 +5,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/opencode-ai/teamcode/internal/llm/models"
+	"github.com/ETEllis/teamcode/internal/llm/models"
 )
 
 type MessageRole string

@@ -8,8 +8,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/opencode-ai/teamcode/internal/config"
-	"github.com/opencode-ai/teamcode/internal/logging"
+	"github.com/ETEllis/teamcode/internal/config"
+	"github.com/ETEllis/teamcode/internal/logging"
 )
 
 // Write writes an LSP message to the given writer

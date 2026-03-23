@@ -7,9 +7,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/opencode-ai/teamcode/internal/config"
-	"github.com/opencode-ai/teamcode/internal/llm/models"
-	"github.com/opencode-ai/teamcode/internal/logging"
+	"github.com/ETEllis/teamcode/internal/config"
+	"github.com/ETEllis/teamcode/internal/llm/models"
+	"github.com/ETEllis/teamcode/internal/logging"
 )
 
 func GetAgentPrompt(agentName config.AgentName, provider models.ModelProvider) string {

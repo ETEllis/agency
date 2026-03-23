@@ -1,6 +1,6 @@
 package prompt
 
-import "github.com/opencode-ai/teamcode/internal/llm/models"
+import "github.com/ETEllis/teamcode/internal/llm/models"
 
 func SummarizerPrompt(_ models.ModelProvider) string {
 	return `You are a helpful AI assistant tasked with summarizing conversations.

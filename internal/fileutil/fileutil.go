@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/bmatcuk/doublestar/v4"
-	"github.com/opencode-ai/teamcode/internal/logging"
+	"github.com/ETEllis/teamcode/internal/logging"
 )
 
 var (

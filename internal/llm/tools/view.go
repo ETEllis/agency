@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/opencode-ai/teamcode/internal/config"
-	"github.com/opencode-ai/teamcode/internal/logging"
-	"github.com/opencode-ai/teamcode/internal/lsp"
+	"github.com/ETEllis/teamcode/internal/config"
+	"github.com/ETEllis/teamcode/internal/logging"
+	"github.com/ETEllis/teamcode/internal/lsp"
 )
 
 type ViewParams struct {

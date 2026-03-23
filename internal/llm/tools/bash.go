@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/opencode-ai/teamcode/internal/config"
-	"github.com/opencode-ai/teamcode/internal/llm/tools/shell"
-	"github.com/opencode-ai/teamcode/internal/permission"
+	"github.com/ETEllis/teamcode/internal/config"
+	"github.com/ETEllis/teamcode/internal/llm/tools/shell"
+	"github.com/ETEllis/teamcode/internal/permission"
 )
 
 type BashParams struct {

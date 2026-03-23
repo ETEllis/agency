@@ -10,14 +10,14 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/opencode-ai/teamcode/internal/app"
-	"github.com/opencode-ai/teamcode/internal/message"
-	"github.com/opencode-ai/teamcode/internal/pubsub"
-	"github.com/opencode-ai/teamcode/internal/session"
-	"github.com/opencode-ai/teamcode/internal/tui/components/dialog"
-	"github.com/opencode-ai/teamcode/internal/tui/styles"
-	"github.com/opencode-ai/teamcode/internal/tui/theme"
-	"github.com/opencode-ai/teamcode/internal/tui/util"
+	"github.com/ETEllis/teamcode/internal/app"
+	"github.com/ETEllis/teamcode/internal/message"
+	"github.com/ETEllis/teamcode/internal/pubsub"
+	"github.com/ETEllis/teamcode/internal/session"
+	"github.com/ETEllis/teamcode/internal/tui/components/dialog"
+	"github.com/ETEllis/teamcode/internal/tui/styles"
+	"github.com/ETEllis/teamcode/internal/tui/theme"
+	"github.com/ETEllis/teamcode/internal/tui/util"
 )
 
 type cacheItem struct {

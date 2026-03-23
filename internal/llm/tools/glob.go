@@ -10,9 +10,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/opencode-ai/teamcode/internal/config"
-	"github.com/opencode-ai/teamcode/internal/fileutil"
-	"github.com/opencode-ai/teamcode/internal/logging"
+	"github.com/ETEllis/teamcode/internal/config"
+	"github.com/ETEllis/teamcode/internal/fileutil"
+	"github.com/ETEllis/teamcode/internal/logging"
 )
 
 const (

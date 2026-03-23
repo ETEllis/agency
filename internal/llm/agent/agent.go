@@ -8,16 +8,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/opencode-ai/teamcode/internal/config"
-	"github.com/opencode-ai/teamcode/internal/llm/models"
-	"github.com/opencode-ai/teamcode/internal/llm/prompt"
-	"github.com/opencode-ai/teamcode/internal/llm/provider"
-	"github.com/opencode-ai/teamcode/internal/llm/tools"
-	"github.com/opencode-ai/teamcode/internal/logging"
-	"github.com/opencode-ai/teamcode/internal/message"
-	"github.com/opencode-ai/teamcode/internal/permission"
-	"github.com/opencode-ai/teamcode/internal/pubsub"
-	"github.com/opencode-ai/teamcode/internal/session"
+	"github.com/ETEllis/teamcode/internal/config"
+	"github.com/ETEllis/teamcode/internal/llm/models"
+	"github.com/ETEllis/teamcode/internal/llm/prompt"
+	"github.com/ETEllis/teamcode/internal/llm/provider"
+	"github.com/ETEllis/teamcode/internal/llm/tools"
+	"github.com/ETEllis/teamcode/internal/logging"
+	"github.com/ETEllis/teamcode/internal/message"
+	"github.com/ETEllis/teamcode/internal/permission"
+	"github.com/ETEllis/teamcode/internal/pubsub"
+	"github.com/ETEllis/teamcode/internal/session"
 )
 
 // Common errors

@@ -7,16 +7,16 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/opencode-ai/teamcode/internal/config"
-	"github.com/opencode-ai/teamcode/internal/llm/models"
-	"github.com/opencode-ai/teamcode/internal/lsp"
-	"github.com/opencode-ai/teamcode/internal/lsp/protocol"
-	"github.com/opencode-ai/teamcode/internal/pubsub"
-	"github.com/opencode-ai/teamcode/internal/session"
-	"github.com/opencode-ai/teamcode/internal/tui/components/chat"
-	"github.com/opencode-ai/teamcode/internal/tui/styles"
-	"github.com/opencode-ai/teamcode/internal/tui/theme"
-	"github.com/opencode-ai/teamcode/internal/tui/util"
+	"github.com/ETEllis/teamcode/internal/config"
+	"github.com/ETEllis/teamcode/internal/llm/models"
+	"github.com/ETEllis/teamcode/internal/lsp"
+	"github.com/ETEllis/teamcode/internal/lsp/protocol"
+	"github.com/ETEllis/teamcode/internal/pubsub"
+	"github.com/ETEllis/teamcode/internal/session"
+	"github.com/ETEllis/teamcode/internal/tui/components/chat"
+	"github.com/ETEllis/teamcode/internal/tui/styles"
+	"github.com/ETEllis/teamcode/internal/tui/theme"
+	"github.com/ETEllis/teamcode/internal/tui/util"
 )
 
 type StatusCmp interface {

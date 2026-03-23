@@ -14,14 +14,14 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/opencode-ai/teamcode/internal/app"
-	"github.com/opencode-ai/teamcode/internal/config"
-	"github.com/opencode-ai/teamcode/internal/logging"
-	"github.com/opencode-ai/teamcode/internal/message"
-	"github.com/opencode-ai/teamcode/internal/tui/image"
-	"github.com/opencode-ai/teamcode/internal/tui/styles"
-	"github.com/opencode-ai/teamcode/internal/tui/theme"
-	"github.com/opencode-ai/teamcode/internal/tui/util"
+	"github.com/ETEllis/teamcode/internal/app"
+	"github.com/ETEllis/teamcode/internal/config"
+	"github.com/ETEllis/teamcode/internal/logging"
+	"github.com/ETEllis/teamcode/internal/message"
+	"github.com/ETEllis/teamcode/internal/tui/image"
+	"github.com/ETEllis/teamcode/internal/tui/styles"
+	"github.com/ETEllis/teamcode/internal/tui/theme"
+	"github.com/ETEllis/teamcode/internal/tui/util"
 )
 
 const (

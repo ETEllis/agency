@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/opencode-ai/teamcode/internal/config"
-	"github.com/opencode-ai/teamcode/internal/logging"
-	"github.com/opencode-ai/teamcode/internal/lsp"
-	"github.com/opencode-ai/teamcode/internal/lsp/watcher"
+	"github.com/ETEllis/teamcode/internal/config"
+	"github.com/ETEllis/teamcode/internal/logging"
+	"github.com/ETEllis/teamcode/internal/lsp"
+	"github.com/ETEllis/teamcode/internal/lsp/watcher"
 )
 
 func (app *App) initLSPClients(ctx context.Context) {

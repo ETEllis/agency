@@ -3,12 +3,12 @@ package agent
 import (
 	"context"
 
-	"github.com/opencode-ai/teamcode/internal/history"
-	"github.com/opencode-ai/teamcode/internal/llm/tools"
-	"github.com/opencode-ai/teamcode/internal/lsp"
-	"github.com/opencode-ai/teamcode/internal/message"
-	"github.com/opencode-ai/teamcode/internal/permission"
-	"github.com/opencode-ai/teamcode/internal/session"
+	"github.com/ETEllis/teamcode/internal/history"
+	"github.com/ETEllis/teamcode/internal/llm/tools"
+	"github.com/ETEllis/teamcode/internal/lsp"
+	"github.com/ETEllis/teamcode/internal/message"
+	"github.com/ETEllis/teamcode/internal/permission"
+	"github.com/ETEllis/teamcode/internal/session"
 )
 
 func CoderAgentTools(

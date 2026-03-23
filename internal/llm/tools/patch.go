@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/opencode-ai/teamcode/internal/config"
-	"github.com/opencode-ai/teamcode/internal/diff"
-	"github.com/opencode-ai/teamcode/internal/history"
-	"github.com/opencode-ai/teamcode/internal/logging"
-	"github.com/opencode-ai/teamcode/internal/lsp"
-	"github.com/opencode-ai/teamcode/internal/permission"
+	"github.com/ETEllis/teamcode/internal/config"
+	"github.com/ETEllis/teamcode/internal/diff"
+	"github.com/ETEllis/teamcode/internal/history"
+	"github.com/ETEllis/teamcode/internal/logging"
+	"github.com/ETEllis/teamcode/internal/lsp"
+	"github.com/ETEllis/teamcode/internal/permission"
 )
 
 type PatchParams struct {

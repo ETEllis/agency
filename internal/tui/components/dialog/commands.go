@@ -4,11 +4,11 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	utilComponents "github.com/opencode-ai/teamcode/internal/tui/components/util"
-	"github.com/opencode-ai/teamcode/internal/tui/layout"
-	"github.com/opencode-ai/teamcode/internal/tui/styles"
-	"github.com/opencode-ai/teamcode/internal/tui/theme"
-	"github.com/opencode-ai/teamcode/internal/tui/util"
+	utilComponents "github.com/ETEllis/teamcode/internal/tui/components/util"
+	"github.com/ETEllis/teamcode/internal/tui/layout"
+	"github.com/ETEllis/teamcode/internal/tui/styles"
+	"github.com/ETEllis/teamcode/internal/tui/theme"
+	"github.com/ETEllis/teamcode/internal/tui/util"
 )
 
 // Command represents a command that can be executed

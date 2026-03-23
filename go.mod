@@ -1,4 +1,4 @@
-module github.com/opencode-ai/teamcode
+module github.com/ETEllis/teamcode
 
 go 1.24.0
 

@@ -3,7 +3,7 @@ package prompt
 import (
 	"fmt"
 
-	"github.com/opencode-ai/teamcode/internal/llm/models"
+	"github.com/ETEllis/teamcode/internal/llm/models"
 )
 
 func TaskPrompt(_ models.ModelProvider) string {

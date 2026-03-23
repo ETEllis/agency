@@ -4,7 +4,7 @@ package lsp
 import (
 	"context"
 
-	"github.com/opencode-ai/teamcode/internal/lsp/protocol"
+	"github.com/ETEllis/teamcode/internal/lsp/protocol"
 )
 
 // Implementation sends a textDocument/implementation request to the LSP server.

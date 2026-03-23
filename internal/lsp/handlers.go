@@ -3,10 +3,10 @@ package lsp
 import (
 	"encoding/json"
 
-	"github.com/opencode-ai/teamcode/internal/config"
-	"github.com/opencode-ai/teamcode/internal/logging"
-	"github.com/opencode-ai/teamcode/internal/lsp/protocol"
-	"github.com/opencode-ai/teamcode/internal/lsp/util"
+	"github.com/ETEllis/teamcode/internal/config"
+	"github.com/ETEllis/teamcode/internal/logging"
+	"github.com/ETEllis/teamcode/internal/lsp/protocol"
+	"github.com/ETEllis/teamcode/internal/lsp/util"
 )
 
 // Requests

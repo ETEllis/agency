@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/opencode-ai/teamcode/cmd"
-	"github.com/opencode-ai/teamcode/internal/logging"
+	"github.com/ETEllis/teamcode/cmd"
+	"github.com/ETEllis/teamcode/internal/logging"
 )
 
 func main() {

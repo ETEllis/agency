@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/opencode-ai/teamcode/internal/team"
+	"github.com/ETEllis/teamcode/internal/team"
 )
 
 type TeamTool struct {
