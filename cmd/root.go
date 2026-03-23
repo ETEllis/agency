@@ -7,8 +7,6 @@ import (
 	"sync"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-	zone "github.com/lrstanley/bubblezone"
 	"github.com/ETEllis/teamcode/internal/app"
 	"github.com/ETEllis/teamcode/internal/config"
 	"github.com/ETEllis/teamcode/internal/db"
@@ -18,6 +16,8 @@ import (
 	"github.com/ETEllis/teamcode/internal/pubsub"
 	"github.com/ETEllis/teamcode/internal/tui"
 	"github.com/ETEllis/teamcode/internal/version"
+	tea "github.com/charmbracelet/bubbletea"
+	zone "github.com/lrstanley/bubblezone"
 	"github.com/spf13/cobra"
 )
 
@@ -102,6 +102,7 @@ to assist developers in writing, debugging, and understanding code directly from
 			logging.Error("Failed to create app: %v", err)
 			return err
 		}
+		logging.Info("App created successfully, CoderAgent: %v", app.CoderAgent)
 		// Defer shutdown here so it runs for both interactive and non-interactive modes
 		defer app.Shutdown()
 
@@ -256,7 +257,9 @@ func setupSubscriptions(app *app.App, parentCtx context.Context) (chan tea.Msg, 
 	setupSubscriber(ctx, &wg, "sessions", app.Sessions.Subscribe, ch)
 	setupSubscriber(ctx, &wg, "messages", app.Messages.Subscribe, ch)
 	setupSubscriber(ctx, &wg, "permissions", app.Permissions.Subscribe, ch)
-	setupSubscriber(ctx, &wg, "coderAgent", app.CoderAgent.Subscribe, ch)
+	if app.CoderAgent != nil {
+		setupSubscriber(ctx, &wg, "coderAgent", app.CoderAgent.Subscribe, ch)
+	}
 
 	cleanupFunc := func() {
 		logging.Info("Cancelling all subscriptions")

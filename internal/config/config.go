@@ -3,6 +3,7 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -440,7 +441,8 @@ func readConfig(err error) error {
 	}
 
 	// It's okay if the config file doesn't exist
-	if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+	var configFileNotFoundError viper.ConfigFileNotFoundError
+	if errors.As(err, &configFileNotFoundError) {
 		return nil
 	}
 

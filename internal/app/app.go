@@ -62,6 +62,8 @@ func New(ctx context.Context, conn *sql.DB) (*App, error) {
 	// Initialize LSP clients in the background
 	go app.initLSPClients(ctx)
 
+	// Try to create the coder agent, but don't fail if it can't be created
+	// This allows the TUI to start even without API keys configured
 	var err error
 	app.CoderAgent, err = agent.NewAgent(
 		config.AgentCoder,
@@ -76,8 +78,9 @@ func New(ctx context.Context, conn *sql.DB) (*App, error) {
 		),
 	)
 	if err != nil {
-		logging.Error("Failed to create coder agent", err)
-		return nil, err
+		logging.Warn("Failed to create coder agent - API keys may not be configured", "error", err)
+		// Don't return error - allow the app to start so TUI can show setup wizard
+		// The coder agent will be nil, and the TUI should handle this case
 	}
 
 	return app, nil

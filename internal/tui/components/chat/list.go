@@ -5,11 +5,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/spinner"
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/ETEllis/teamcode/internal/app"
 	"github.com/ETEllis/teamcode/internal/message"
 	"github.com/ETEllis/teamcode/internal/pubsub"
@@ -18,6 +13,11 @@ import (
 	"github.com/ETEllis/teamcode/internal/tui/styles"
 	"github.com/ETEllis/teamcode/internal/tui/theme"
 	"github.com/ETEllis/teamcode/internal/tui/util"
+	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/spinner"
+	"github.com/charmbracelet/bubbles/viewport"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type cacheItem struct {
@@ -169,6 +169,9 @@ func (m *messagesCmp) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *messagesCmp) IsAgentWorking() bool {
+	if m.app.CoderAgent == nil {
+		return false
+	}
 	return m.app.CoderAgent.IsSessionBusy(m.session.ID)
 }
 
@@ -377,7 +380,7 @@ func (m *messagesCmp) help() string {
 
 	text := ""
 
-	if m.app.CoderAgent.IsBusy() {
+	if m.app.CoderAgent != nil && m.app.CoderAgent.IsBusy() {
 		text += lipgloss.JoinHorizontal(
 			lipgloss.Left,
 			baseStyle.Foreground(t.TextMuted()).Bold(true).Render("press "),

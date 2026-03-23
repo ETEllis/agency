@@ -2,11 +2,9 @@ package page
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/ETEllis/teamcode/internal/app"
 	"github.com/ETEllis/teamcode/internal/completions"
 	"github.com/ETEllis/teamcode/internal/message"
@@ -15,6 +13,9 @@ import (
 	"github.com/ETEllis/teamcode/internal/tui/components/dialog"
 	"github.com/ETEllis/teamcode/internal/tui/layout"
 	"github.com/ETEllis/teamcode/internal/tui/util"
+	"github.com/charmbracelet/bubbles/key"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 var ChatPage PageID = "chat"
@@ -73,10 +74,10 @@ func (p *chatPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case dialog.CommandRunCustomMsg:
 		// Check if the agent is busy before executing custom commands
-		if p.app.CoderAgent.IsBusy() {
+		if p.app.CoderAgent != nil && p.app.CoderAgent.IsBusy() {
 			return p, util.ReportWarn("Agent is busy, please wait before executing a command...")
 		}
-		
+
 		// Process the command content with arguments if any
 		content := msg.Content
 		if msg.Args != nil {
@@ -86,7 +87,7 @@ func (p *chatPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				content = strings.ReplaceAll(content, placeholder, value)
 			}
 		}
-		
+
 		// Handle custom command execution
 		cmd := p.sendMessage(content, nil)
 		if cmd != nil {
@@ -112,7 +113,7 @@ func (p *chatPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				util.CmdHandler(chat.SessionClearedMsg{}),
 			)
 		case key.Matches(msg, keyMap.Cancel):
-			if p.session.ID != "" {
+			if p.session.ID != "" && p.app.CoderAgent != nil {
 				// Cancel the current session's generation process
 				// This allows users to interrupt long-running operations
 				p.app.CoderAgent.Cancel(p.session.ID)
@@ -153,6 +154,11 @@ func (p *chatPage) clearSidebar() tea.Cmd {
 }
 
 func (p *chatPage) sendMessage(text string, attachments []message.Attachment) tea.Cmd {
+	// Check if CoderAgent is available
+	if p.app.CoderAgent == nil {
+		return util.ReportError(fmt.Errorf("no AI provider configured: please set ANTHROPIC_API_KEY, OPENAI_API_KEY, or another supported provider API key"))
+	}
+
 	var cmds []tea.Cmd
 	if p.session.ID == "" {
 		session, err := p.app.Sessions.Create(context.Background(), "New Session")
