@@ -6,15 +6,18 @@ import (
 )
 
 type Member struct {
-	AgentName  string `json:"agentName"`
-	RoleName   string `json:"roleName,omitempty"`
-	SessionID  string `json:"sessionId,omitempty"`
-	Kind       string `json:"kind,omitempty"`
-	Profile    string `json:"profile,omitempty"`
-	Status     string `json:"status,omitempty"`
-	LastResult string `json:"lastResult,omitempty"`
-	UpdatedAt  int64  `json:"updatedAt"`
-	CreatedAt  int64  `json:"createdAt"`
+	AgentName         string `json:"agentName"`
+	RoleName          string `json:"roleName,omitempty"`
+	SessionID         string `json:"sessionId,omitempty"`
+	Kind              string `json:"kind,omitempty"`
+	Profile           string `json:"profile,omitempty"`
+	Status            string `json:"status,omitempty"`
+	LastResult        string `json:"lastResult,omitempty"`
+	ReportsTo         string `json:"reportsTo,omitempty"`
+	Leader            bool   `json:"leader,omitempty"`
+	CanSpawnSubagents bool   `json:"canSpawnSubagents,omitempty"`
+	UpdatedAt         int64  `json:"updatedAt"`
+	CreatedAt         int64  `json:"createdAt"`
 }
 
 type MemberService struct {
@@ -67,6 +70,15 @@ func (s *MemberService) Upsert(ctx context.Context, teamName string, member Memb
 			}
 			if member.LastResult == "" {
 				member.LastResult = members[i].LastResult
+			}
+			if member.ReportsTo == "" {
+				member.ReportsTo = members[i].ReportsTo
+			}
+			if !member.Leader {
+				member.Leader = members[i].Leader
+			}
+			if !member.CanSpawnSubagents {
+				member.CanSpawnSubagents = members[i].CanSpawnSubagents
 			}
 			member.CreatedAt = members[i].CreatedAt
 			members[i] = member

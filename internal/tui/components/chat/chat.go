@@ -98,31 +98,24 @@ func lspsConfigured(width int) string {
 }
 
 func logo(width int) string {
+	logo := fmt.Sprintf("%s %s", styles.TeamCodeIcon, "TeamCode")
 	t := theme.CurrentTheme()
 	baseStyle := styles.BaseStyle()
-	art := []string{
-		fmt.Sprintf("%s TEAMCODE", styles.TeamCodeIcon),
-		"╔╦╗╔═╗╔═╗╔╦╗  ╔═╗╔═╗╔╦╗╔═╗",
-		" ║ ║╣ ╠═╣║║║  ║  ║ ║ ║║║╣ ",
-		" ╩ ╚═╝╩ ╩╩ ╩  ╚═╝╚═╝═╩╝╚═╝",
-		"team runtime + teammates + subagents",
-	}
-	logo := lipgloss.JoinVertical(lipgloss.Left, art...)
-
 	versionText := baseStyle.
 		Foreground(t.TextMuted()).
 		Render(version.Version)
 
-	return baseStyle.
-		Bold(true).
-		Width(width).
-		Render(
-			lipgloss.JoinVertical(
-				lipgloss.Left,
-				logo,
-				versionText,
-			),
-		)
+	tagline := baseStyle.
+		Foreground(t.TextMuted()).
+		Render("lead • teammates • subagents")
+
+	return baseStyle.Bold(true).Width(width).Render(
+		lipgloss.JoinVertical(
+			lipgloss.Left,
+			lipgloss.JoinHorizontal(lipgloss.Left, logo, " ", versionText),
+			tagline,
+		),
+	)
 }
 
 func repo(width int) string {

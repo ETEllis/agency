@@ -8,31 +8,157 @@ YELLOW='\033[1;33m'
 ORANGE='\033[38;2;255;140;0m'
 NC='\033[0m' # No Color
 
-echo -e "${ORANGE}⌬ TeamCode${NC} - Installing via go install..."
-echo ""
+requested_version=${VERSION:-}
 
-# Check if Go is installed
-if ! command -v go >/dev/null 2>&1; then
-    echo -e "${RED}Go is not installed. Please install Go first: https://go.dev/doc/install${NC}"
+os=$(uname -s | tr '[:upper:]' '[:lower:]')
+if [[ "$os" == "darwin" ]]; then
+    os="mac"
+fi
+arch=$(uname -m)
+
+if [[ "$arch" == "aarch64" ]]; then
+    arch="arm64"
+fi
+
+filename="$APP-$os-$arch.tar.gz"
+
+case "$filename" in
+    *"-linux-"*)
+        [[ "$arch" == "x86_64" || "$arch" == "arm64" || "$arch" == "i386" ]] || exit 1
+    ;;
+    *"-mac-"*)
+        [[ "$arch" == "x86_64" || "$arch" == "arm64" ]] || exit 1
+    ;;
+    *)
+        echo "${RED}Unsupported OS/Arch: $os/$arch${NC}"
+        exit 1
+    ;;
+esac
+
+INSTALL_DIR=$HOME/.teamcode/bin
+mkdir -p "$INSTALL_DIR"
+
+if [ -z "$requested_version" ]; then
+    url="https://github.com/ETEllis/teamcode/releases/latest/download/$filename"
+    specific_version=$(curl -s https://api.github.com/repos/ETEllis/teamcode/releases/latest | awk -F'"' '/"tag_name": "/ {gsub(/^v/, "", $4); print $4}')
+
+    if [[ $? -ne 0 || -z "$specific_version" ]]; then
+        echo "${RED}Failed to fetch version information${NC}"
+        exit 1
+    fi
+else
+    url="https://github.com/ETEllis/teamcode/releases/download/v${requested_version}/$filename"
+    specific_version=$requested_version
+fi
+
+print_message() {
+    local level=$1
+    local message=$2
+    local color=""
+
+    case $level in
+        info) color="${GREEN}" ;;
+        warning) color="${YELLOW}" ;;
+        error) color="${RED}" ;;
+    esac
+
+    echo -e "${color}${message}${NC}"
+}
+
+check_version() {
+    if command -v teamcode >/dev/null 2>&1; then
+        installed_version=$(teamcode -v 2>/dev/null || true)
+        installed_version=$(echo "$installed_version" | awk '{print $NF}')
+
+        if [[ -n "$installed_version" && "$installed_version" == "$specific_version" ]]; then
+            print_message info "Version ${YELLOW}$specific_version${GREEN} already installed"
+            exit 0
+        elif [[ -n "$installed_version" ]]; then
+            print_message info "Installed version: ${YELLOW}$installed_version"
+        fi
+    fi
+}
+
+download_and_install() {
+    print_message info "Downloading ${ORANGE}teamcode ${GREEN}version: ${YELLOW}$specific_version ${GREEN}..."
+    tmpdir=$(mktemp -d)
+    trap 'rm -rf "$tmpdir"' EXIT
+    cd "$tmpdir"
+    curl -# -L "$url" | tar xz
+    mv teamcode "$INSTALL_DIR"
+    cd - >/dev/null
+    rm -rf "$tmpdir"
+    trap - EXIT
+}
+
+check_version
+download_and_install
+
+add_to_path() {
+    local config_file=$1
+    local command=$2
+
+    if [[ -w $config_file ]]; then
+        echo -e "\n# teamcode" >> "$config_file"
+        echo "$command" >> "$config_file"
+        print_message info "Successfully added ${ORANGE}teamcode ${GREEN}to \$PATH in $config_file"
+    else
+        print_message warning "Manually add the directory to $config_file (or similar):"
+        print_message info "  $command"
+    fi
+}
+
+XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
+
+current_shell=$(basename "$SHELL")
+case $current_shell in
+    fish)
+        config_files="$HOME/.config/fish/config.fish"
+    ;;
+    zsh)
+        config_files="$HOME/.zshrc $HOME/.zshenv $XDG_CONFIG_HOME/zsh/.zshrc $XDG_CONFIG_HOME/zsh/.zshenv"
+    ;;
+    bash)
+        config_files="$HOME/.bashrc $HOME/.bash_profile $HOME/.profile $XDG_CONFIG_HOME/bash/.bashrc $XDG_CONFIG_HOME/bash/.bash_profile"
+    ;;
+    ash)
+        config_files="$HOME/.ashrc $HOME/.profile /etc/profile"
+    ;;
+    sh)
+        config_files="$HOME/.ashrc $HOME/.profile /etc/profile"
+    ;;
+    *)
+        config_files="$HOME/.bashrc $HOME/.bash_profile $XDG_CONFIG_HOME/bash/.bashrc $XDG_CONFIG_HOME/bash/.bash_profile"
+    ;;
+esac
+
+config_file=""
+for file in $config_files; do
+    if [[ -f $file ]]; then
+        config_file=$file
+        break
+    fi
+done
+
+if [[ -z $config_file ]]; then
+    print_message error "No config file found for $current_shell."
     exit 1
 fi
 
-# Install using go install
-echo -e "${GREEN}Running: go install github.com/ETEllis/teamcode@latest${NC}"
-go install github.com/ETEllis/teamcode@latest
-
-# Verify installation
-if command -v teamcode >/dev/null 2>&1; then
-    echo ""
-    echo -e "${GREEN}✅ TeamCode installed successfully!${NC}"
-    echo -e "Run ${ORANGE}teamcode${NC} to start."
-else
-    # Add GOBIN to PATH if not already there
-    GOBIN=$(go env GOPATH)/bin
-    if [[ ":$PATH:" != *":$GOBIN:"* ]]; then
-        echo ""
-        echo -e "${YELLOW}Note: You may need to add $GOBIN to your PATH${NC}"
-        echo -e "Add this to your shell config:"
-        echo -e "  ${GREEN}export PATH=\$PATH:$GOBIN${NC}"
-    fi
+if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
+    case $current_shell in
+        fish)
+            add_to_path "$config_file" "fish_add_path $INSTALL_DIR"
+        ;;
+        *)
+            add_to_path "$config_file" "export PATH=$INSTALL_DIR:\$PATH"
+        ;;
+    esac
 fi
+
+if [ -n "${GITHUB_ACTIONS-}" ] && [ "${GITHUB_ACTIONS}" == "true" ]; then
+    echo "$INSTALL_DIR" >> "$GITHUB_PATH"
+    print_message info "Added $INSTALL_DIR to \$GITHUB_PATH"
+fi
+
+print_message info "Run ${ORANGE}teamcode${GREEN} to start."

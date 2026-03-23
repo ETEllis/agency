@@ -7,6 +7,7 @@ import (
 
 type TeamContext struct {
 	TeamName         string           `json:"teamName"`
+	Leader           string           `json:"leader,omitempty"`
 	Charter          string           `json:"charter"`
 	Goals            []Goal           `json:"goals"`
 	Roles            map[string]Role  `json:"roles"`
@@ -34,6 +35,7 @@ type WorkingAgreement struct {
 	MaxWIP              int      `json:"maxWip"`
 	HandoffRequires     []string `json:"handoffRequires"`
 	ReviewRequired      bool     `json:"reviewRequired"`
+	AllowsSubagents     bool     `json:"allowsSubagents"`
 	ApprovalRequiredFor []string `json:"approvalRequiredFor,omitempty"`
 }
 
@@ -62,6 +64,7 @@ func (s *TeamContextService) CreateContext(ctx context.Context, teamName, charte
 				MaxWIP:              3,
 				HandoffRequires:     []string{"summary", "artifacts"},
 				ReviewRequired:      true,
+				AllowsSubagents:     true,
 			},
 			CreatedAt: time.Now().UnixMilli(),
 		}
@@ -108,6 +111,9 @@ func (s *TeamContextService) UpdateContext(ctx context.Context, teamName string,
 	}
 	if charter, ok := updates["charter"].(string); ok {
 		tc.Charter = charter
+	}
+	if leader, ok := updates["leader"].(string); ok {
+		tc.Leader = leader
 	}
 	tc.UpdatedAt = time.Now().UnixMilli()
 	if err := s.store.writeJSON(teamName, "team_context.json", tc); err != nil {

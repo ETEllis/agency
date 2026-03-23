@@ -39,6 +39,7 @@ func CoderAgentTools(
 			tools.NewViewTool(lspClients),
 			tools.NewPatchTool(lspClients, permissions, history),
 			tools.NewWriteTool(lspClients, permissions, history),
+			tools.NewTeamBootstrapTool(teamService, manager),
 			tools.NewTeamTool(teamService),
 			tools.NewTeamAddRoleTool(teamService),
 			tools.NewTeamAssignRoleTool(teamService),

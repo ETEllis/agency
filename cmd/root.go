@@ -23,7 +23,7 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "teamcode",
-	Short: "Terminal-based AI coding team assistant",
+	Short: "Terminal-based AI assistant for software development",
 	Long: `TeamCode is a powerful terminal-based AI assistant that helps with software development tasks.
 It provides an interactive chat interface with AI capabilities, code analysis, and LSP integration
 to assist developers in writing, debugging, and understanding code directly from the terminal.`,
@@ -102,7 +102,6 @@ to assist developers in writing, debugging, and understanding code directly from
 			logging.Error("Failed to create app: %v", err)
 			return err
 		}
-		logging.Info("App created successfully, CoderAgent: %v", app.CoderAgent)
 		// Defer shutdown here so it runs for both interactive and non-interactive modes
 		defer app.Shutdown()
 

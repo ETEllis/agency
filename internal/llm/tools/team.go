@@ -11,6 +11,7 @@ import (
 )
 
 const (
+	TeamBootstrapToolName     = "team_bootstrap"
 	TeamCreateContextToolName = "team_create_context"
 	TeamAddRoleToolName       = "team_add_role"
 	TeamAssignRoleToolName    = "team_assign_role"
@@ -30,6 +31,183 @@ const (
 
 type TeamTool struct {
 	service *team.Service
+}
+
+type TeamBootstrapRole struct {
+	Name         string `json:"name"`
+	Responsible  string `json:"responsible"`
+	CurrentFocus string `json:"current_focus"`
+	Profile      string `json:"profile"`
+	Prompt       string `json:"prompt"`
+}
+
+type TeamBootstrapParams struct {
+	TeamName       string              `json:"team_name"`
+	Objective      string              `json:"objective"`
+	LeadName       string              `json:"lead_name"`
+	Roles          []TeamBootstrapRole `json:"roles"`
+	SpawnTeammates *bool               `json:"spawn_teammates"`
+}
+
+type TeamBootstrapTool struct {
+	workerSpawnBase
+}
+
+func NewTeamBootstrapTool(service *team.Service, manager *orchestration.Manager) *TeamBootstrapTool {
+	return &TeamBootstrapTool{workerSpawnBase{service: service, manager: manager}}
+}
+
+func (t *TeamBootstrapTool) Info() ToolInfo {
+	return ToolInfo{
+		Name:        TeamBootstrapToolName,
+		Description: "Bootstrap a leader-led team with default specialist roles, a shared board, and optional teammate sessions. Prefer this over manually wiring a team when the user asks for coordinated multi-agent execution.",
+		Parameters: map[string]any{
+			"team_name":       "string - Name of the team",
+			"objective":       "string - Shared mission for the team",
+			"lead_name":       "string - Optional leader name, defaults to `team-lead`",
+			"roles":           "array - Optional specialist role objects `{name,responsible,current_focus,profile,prompt}`",
+			"spawn_teammates": "bool - When true, immediately spawn the lead and specialist teammates",
+		},
+		Required: []string{"team_name", "objective"},
+	}
+}
+
+func defaultBootstrapRoles(objective string) []TeamBootstrapRole {
+	return []TeamBootstrapRole{
+		{
+			Name:         "lead",
+			Responsible:  "Own the plan, coordinate the team, assign work, keep the board accurate, and decide when to spawn subagents.",
+			CurrentFocus: objective,
+			Profile:      "coder",
+			Prompt:       fmt.Sprintf("You are the team lead. Coordinate the work, break the objective into tasks, keep teammates aligned, use direct chatter and broadcasts deliberately, and spawn subagents when focused execution helps.\n\nObjective: %s", objective),
+		},
+		{
+			Name:         "implementer",
+			Responsible:  "Build the main code changes and keep implementation moving.",
+			CurrentFocus: objective,
+			Profile:      "coder",
+			Prompt:       fmt.Sprintf("You are the implementation specialist. Build the main changes for the team objective, report progress clearly, and hand off for review when a meaningful slice is ready.\n\nObjective: %s", objective),
+		},
+		{
+			Name:         "reviewer",
+			Responsible:  "Review quality, tests, regressions, and release readiness.",
+			CurrentFocus: "verification",
+			Profile:      "coder",
+			Prompt:       fmt.Sprintf("You are the reviewer. Focus on test coverage, regressions, packaging, and integration quality. Send direct feedback and formal handoffs when review is complete.\n\nObjective: %s", objective),
+		},
+		{
+			Name:         "researcher",
+			Responsible:  "Trace code paths, compare upstream behavior, and gather evidence for the team.",
+			CurrentFocus: "analysis",
+			Profile:      "coder",
+			Prompt:       fmt.Sprintf("You are the researcher. Gather codebase evidence, compare behavior with references when needed, and summarize findings so the rest of the team can move faster.\n\nObjective: %s", objective),
+		},
+	}
+}
+
+func (t *TeamBootstrapTool) Run(ctx context.Context, call ToolCall) (ToolResponse, error) {
+	var params TeamBootstrapParams
+	if err := json.Unmarshal([]byte(call.Input), &params); err != nil {
+		return NewTextErrorResponse(fmt.Sprintf("error parsing parameters: %s", err)), nil
+	}
+	if params.TeamName == "" {
+		return NewTextErrorResponse("team_name is required"), nil
+	}
+	if params.Objective == "" {
+		return NewTextErrorResponse("objective is required"), nil
+	}
+
+	leadName := params.LeadName
+	if leadName == "" {
+		leadName = "team-lead"
+	}
+	spawnTeammates := true
+	if params.SpawnTeammates != nil {
+		spawnTeammates = *params.SpawnTeammates
+	}
+
+	roles := params.Roles
+	if len(roles) == 0 {
+		roles = defaultBootstrapRoles(params.Objective)
+	}
+
+	roleMap := make(map[string]team.Role, len(roles))
+	for _, role := range roles {
+		if role.Name == "" {
+			return NewTextErrorResponse("each role requires a name"), nil
+		}
+		roleMap[role.Name] = team.Role{
+			Name:         role.Name,
+			Responsible:  role.Responsible,
+			CurrentFocus: role.CurrentFocus,
+		}
+	}
+
+	tc, err := t.service.Context.CreateContext(ctx, params.TeamName, params.Objective, roleMap)
+	if err != nil {
+		return NewTextErrorResponse(fmt.Sprintf("failed to create team context: %s", err)), nil
+	}
+	tc, err = t.service.Context.UpdateContext(ctx, params.TeamName, map[string]any{"leader": leadName})
+	if err != nil {
+		return NewTextErrorResponse(fmt.Sprintf("failed to update team leader: %s", err)), nil
+	}
+	if _, err := t.service.Board.CreateBoard(ctx, params.TeamName); err != nil {
+		return NewTextErrorResponse(fmt.Sprintf("failed to create team board: %s", err)), nil
+	}
+	_, _ = t.service.Context.AddGoal(ctx, params.TeamName, team.Goal{
+		ID:          "primary-objective",
+		Description: params.Objective,
+		Status:      "active",
+	})
+	_, _ = t.service.Board.AddTaskToColumn(ctx, params.TeamName, "plan-team-execution", "ready")
+	_, _ = t.service.Board.AddTaskToColumn(ctx, params.TeamName, "implement-objective", "backlog")
+	_, _ = t.service.Board.AddTaskToColumn(ctx, params.TeamName, "review-and-ship", "backlog")
+
+	bootstrapSummary := []string{
+		fmt.Sprintf("Team %s bootstrapped", params.TeamName),
+		fmt.Sprintf("Leader: %s", leadName),
+		fmt.Sprintf("Roles: %d", len(roleMap)),
+	}
+
+	var workers []orchestration.Worker
+	if spawnTeammates {
+		for _, role := range roles {
+			memberName := role.Name
+			if role.Name == "lead" {
+				memberName = leadName
+			}
+			worker, spawnErr := t.spawn(ctx, workerSpawnParams{
+				TeamName: params.TeamName,
+				Name:     memberName,
+				RoleName: role.Name,
+				Prompt:   role.Prompt,
+				Title:    "Team member: " + memberName,
+				Profile:  role.Profile,
+				Wait:     false,
+			}, orchestration.WorkerKindTeammate)
+			if spawnErr != nil {
+				return NewTextErrorResponse(fmt.Sprintf("failed to spawn %s: %s", memberName, spawnErr)), nil
+			}
+			workers = append(workers, worker)
+			_, _ = t.service.Members.Upsert(context.Background(), params.TeamName, team.Member{
+				AgentName:         memberName,
+				RoleName:          role.Name,
+				SessionID:         worker.SessionID,
+				Kind:              string(worker.Kind),
+				Profile:           worker.Profile,
+				Status:            string(worker.Status),
+				ReportsTo:         leadName,
+				Leader:            role.Name == "lead",
+				CanSpawnSubagents: true,
+			})
+		}
+		bootstrapSummary = append(bootstrapSummary, fmt.Sprintf("Spawned teammates: %d", len(workers)))
+	}
+
+	return WithResponseMetadata(NewTextResponse(strings.Join(bootstrapSummary, "\n")), map[string]any{
+		"context": tc,
+		"workers": workers,
+	}), nil
 }
 
 type TeamCreateContextParams struct {
@@ -503,6 +681,12 @@ func (t *TeamStatusTool) Run(ctx context.Context, call ToolCall) (ToolResponse, 
 	if err != nil {
 		return NewTextErrorResponse(fmt.Sprintf("failed to read team context: %s", err)), nil
 	}
+	if tc == nil {
+		tc, err = t.service.Context.CreateContext(ctx, params.TeamName, "", nil)
+		if err != nil {
+			return NewTextErrorResponse(fmt.Sprintf("failed to create missing team context: %s", err)), nil
+		}
+	}
 	board, err := t.service.Board.CreateBoard(ctx, params.TeamName)
 	if err != nil {
 		return NewTextErrorResponse(fmt.Sprintf("failed to read board: %s", err)), nil
@@ -526,6 +710,7 @@ func (t *TeamStatusTool) Run(ctx context.Context, call ToolCall) (ToolResponse, 
 
 	lines := []string{
 		fmt.Sprintf("Team: %s", params.TeamName),
+		fmt.Sprintf("Leader: %s", tc.Leader),
 		fmt.Sprintf("Roles: %d", len(tc.Roles)),
 		fmt.Sprintf("Members: %d", len(members)),
 		fmt.Sprintf("Open handoffs: %d", len(handoffs)),

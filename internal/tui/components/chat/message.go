@@ -240,6 +240,8 @@ func toolName(name string) string {
 		return "Write"
 	case tools.PatchToolName:
 		return "Patch"
+	case tools.TeamBootstrapToolName:
+		return "Bootstrap"
 	case tools.TeamCreateContextToolName:
 		return "Team"
 	case tools.TeamAddRoleToolName:
@@ -298,6 +300,8 @@ func getToolAction(name string) string {
 		return "Preparing write..."
 	case tools.PatchToolName:
 		return "Preparing patch..."
+	case tools.TeamBootstrapToolName:
+		return "Bootstrapping team..."
 	case tools.TeamCreateContextToolName:
 		return "Creating team..."
 	case tools.TeamAddRoleToolName:

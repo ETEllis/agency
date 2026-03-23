@@ -15,6 +15,7 @@ TeamCode is a fork of OpenCode focused on first-class multi-agent collaboration.
 - **Persistent Teammates**: Named worker sessions with role identity
 - **Subagents**: Bounded worker sessions for focused delegated execution
 - **Nested Delegation**: Teammates can spawn their own subagents
+- **Leader-Led Execution**: Teams can be bootstrapped around a lead who coordinates delegation, broadcasts, and task board flow
 
 ## Architecture
 
@@ -34,7 +35,31 @@ TeamCode (Go)
 
 Team state is now native Go and file-backed under `.teamcode/teams` or the configured TeamCode data directory. The old Python bridge is no longer part of the runtime.
 
-## Building
+## Installation
+
+### Using the Install Script
+
+```bash
+# Install the latest version
+curl -fsSL https://raw.githubusercontent.com/ETEllis/teamcode/refs/heads/main/install | bash
+
+# Install a specific version
+curl -fsSL https://raw.githubusercontent.com/ETEllis/teamcode/refs/heads/main/install | VERSION=0.1.0 bash
+```
+
+### Using Homebrew
+
+```bash
+brew install --cask ETEllis/tap/teamcode
+```
+
+### Using Go
+
+```bash
+go install github.com/ETEllis/teamcode@latest
+```
+
+## Building From Source
 
 ```bash
 go build -o teamcode .
@@ -53,10 +78,27 @@ go build -o teamcode .
 ./teamcode -d
 ```
 
+## Configuration
+
+TeamCode looks for configuration in these locations:
+
+- `$HOME/.teamcode.json`
+- `$XDG_CONFIG_HOME/teamcode/.teamcode.json`
+- `./.teamcode.json`
+
+Legacy OpenCode config files are still read as fallbacks:
+
+- `$HOME/.opencode.json`
+- `$XDG_CONFIG_HOME/opencode/.opencode.json`
+- `./.opencode.json`
+
+You can also configure providers with environment variables such as `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, `GITHUB_TOKEN`, `OPENROUTER_API_KEY`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AZURE_OPENAI_ENDPOINT`, and `AZURE_OPENAI_API_KEY`.
+
 ## Collaboration Tools
 
 The main coder agent now has first-class collaboration tools:
 
+- `team_bootstrap` - Create a leader-led team with default specialist roles and optional spawned teammates
 - `team_create_context` - Create team with charter and roles
 - `team_add_role` - Add role definitions
 - `team_assign_role` - Assign agents to roles
@@ -70,6 +112,15 @@ The main coder agent now has first-class collaboration tools:
 - `team_status` - Inspect team, task, member, handoff, and worker state
 - `teammate_spawn` / `teammate_wait` - Launch and monitor persistent teammates
 - `subagent_spawn` / `subagent_wait` - Launch and monitor bounded subagents
+
+For most coordinated workflows, TeamCode should start with `team_bootstrap` and a leader-led pattern instead of manually stitching roles together one tool at a time.
+
+## Memory and Commands
+
+- Team memory files: `TeamCode.md`, `teamcode.md`
+- Legacy memory files still supported: `OpenCode.md`, `opencode.md`
+- User custom commands: `$HOME/.teamcode/commands/`
+- Project custom commands: `<PROJECT>/.teamcode/commands/`
 
 ## Compatibility
 
