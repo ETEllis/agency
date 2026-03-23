@@ -105,17 +105,17 @@ func logo(width int) string {
 		Foreground(t.TextMuted()).
 		Render(version.Version)
 
-	tagline := baseStyle.
-		Foreground(t.TextMuted()).
-		Render("lead • teammates • subagents")
-
-	return baseStyle.Bold(true).Width(width).Render(
-		lipgloss.JoinVertical(
-			lipgloss.Left,
-			lipgloss.JoinHorizontal(lipgloss.Left, logo, " ", versionText),
-			tagline,
-		),
-	)
+	return baseStyle.
+		Bold(true).
+		Width(width).
+		Render(
+			lipgloss.JoinHorizontal(
+				lipgloss.Left,
+				logo,
+				" ",
+				versionText,
+			),
+		)
 }
 
 func repo(width int) string {
