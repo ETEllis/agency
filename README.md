@@ -1,130 +1,199 @@
-# TeamCode
+# Agency
 
-⌬ Terminal-based AI coding team assistant with multi-agent collaboration support.
+**Your intent, multiplied.**
 
-## Overview
+Agency is a terminal-first AI working organization. Staff a persistent office of autonomous agents — each with a distinct voice, personality, and role — that run indefinitely on a schedule or one-off, build in public, and coordinate through a shared ledger. Watch them think. Hear them speak. Approve or reject their proposals in real time.
 
-TeamCode is a fork of OpenCode focused on first-class multi-agent collaboration. It keeps the terminal-native workflow, model selection, and coding tools from OpenCode, while adding persistent team coordination and formal subagent execution. It enables:
+---
 
-- **Team Context**: Shared charter, roles, goals, and working agreements
-- **Task Board**: Shared backlog, in-progress, blocked, and done state
-- **Handoff Protocol**: Explicit task transitions between agents
-- **Private Inboxes**: Each agent has their own message inbox
-- **Direct Chatter**: Teammates can message specific peers
-- **Global Broadcasts**: Team-wide updates and coordination signals
-- **Persistent Teammates**: Named worker sessions with role identity
-- **Subagents**: Bounded worker sessions for focused delegated execution
-- **Nested Delegation**: Teammates can spawn their own subagents
-- **Leader-Led Execution**: Teams can be bootstrapped around a lead who coordinates delegation, broadcasts, and task board flow
+## What's Built
 
-## Architecture
+The full 5-stage core runtime is complete and ships in this repo.
+
+### Architecture
 
 ```
-TeamCode (Go)
-    │
-    ├── internal/team/             # Shared team state and messaging
-    │       ├── team_context.json
-    │       ├── task_board.json
-    │       ├── handoffs.json
-    │       ├── members.json
-    │       └── inboxes/<agent>.json
-    │
-    └── internal/orchestration/    # Persistent teammate/subagent runtime
-            └── worker manager + child sessions
+┌─────────────────────────────────────────────────────────┐
+│  USER LAYER                                              │
+│  TUI iMessage bubbles · Voice (kokoro/say) · Approval    │
+│  lane · Bulletin board · Genesis wizard                  │
+└────────────────────────┬────────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────────┐
+│  DETERMINISTIC LAYER  (Nested Temporal Cron Tree)        │
+│  ScheduleNode tree · prompt_injection per node           │
+│  Fires enriched WakeSignals into reactive layer          │
+└────────────────────────┬────────────────────────────────┘
+                         │ enriched WakeSignal
+┌────────────────────────▼────────────────────────────────┐
+│  REACTIVE LAYER  (Stateful Agent Runtime)                │
+│  Redis event bus · Actor daemons · Ledger · Consensus    │
+└────────────────────────┬────────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────────┐
+│  GIST COGNITIVE LAYER  (per-agent)                       │
+│  Causal compression · ElasticStretch · Lattice state     │
+│  Outputs: GISTVerdict + execution_intent                 │
+└────────────────────────┬────────────────────────────────┘
+                         │ ActionIntent
+┌────────────────────────▼────────────────────────────────┐
+│  MODEL ROUTING LAYER                                     │
+│  ModelRouter · CredentialBroker · 4 provider adapters    │
+│  5 hard gates (capability/auth/privacy/tools/budget)     │
+│  Ollama-first soft scoring                               │
+└────────────────────────┬────────────────────────────────┘
+                         │ Result
+┌────────────────────────▼────────────────────────────────┐
+│  LEDGER  (append-only, single source of truth)           │
+│  CommitCertificate · Quorum consensus · Snapshots        │
+└─────────────────────────────────────────────────────────┘
 ```
 
-Team state is now native Go and file-backed under `.teamcode/teams` or the configured TeamCode data directory. The old Python bridge is no longer part of the runtime.
+**Full request chain:**
+```
+WakeSignal → GIST/ReasoningCore → ActionIntent → ModelRouter → ProviderAdapter → Result → Ledger
+```
 
-## Installation
+### Completed Stages
 
-### Using the Install Script
+| Stage | What shipped |
+|-------|-------------|
+| **1 — Live Agent Foundation** | Voice (kokoro-onnx + macOS `say` fallback), DB poll scheduler, broadcast→TUI pipeline, env config |
+| **2 — GIST Cognitive Layer** | `GISTAgentCore`, causal compression, `ElasticStretch`, `LatticeStore`, per-wake lattice persistence |
+| **3 — Model Routing Layer** | `ModelRouter` (5 hard gates + soft scoring), `CredentialBroker`, Anthropic/Ollama/OpenAI/Gemini adapters, routing audit log |
+| **4 — Core TUI Experience** | iMessage-style bubbles (per-actor color + avatar + timestamp), TTS voice on broadcast, `ApprovalCmp` panel (a/r keys, auto right-rail), approval channel + vote relay |
+| **5 — Nested Temporal Orchestration** | `ScheduleNode` tree with `prompt_injection`, `NestedScheduler`, `PerformanceRecord`, bulletin timeline (directive→output→score), daemon wired: directive → 1.5-weight GIST atom + performance publish |
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- Go 1.22+
+- Redis (for multi-agent mode — optional for solo)
+- Python 3.9+ with `kokoro-onnx` (for high-quality voice — falls back to `say`)
+- An API key for at least one provider (Anthropic, OpenAI, Gemini) **or** Ollama running locally
+
+### Install voice (optional)
 
 ```bash
-# Install the latest version
-curl -fsSL https://raw.githubusercontent.com/ETEllis/teamcode/refs/heads/main/install | bash
-
-# Install a specific version
-curl -fsSL https://raw.githubusercontent.com/ETEllis/teamcode/refs/heads/main/install | VERSION=0.1.0 bash
+scripts/install-voice
 ```
 
-### Using Homebrew
+### Boot the office
 
 ```bash
-brew install --cask ETEllis/tap/teamcode
+# Build all daemons
+scripts/build-daemons
+
+# Set at least one provider key
+export ANTHROPIC_API_KEY=sk-...   # or OPENAI_API_KEY, GEMINI_API_KEY, OLLAMA_API_BASE
+
+# Start the office (TUI + scheduler + actor daemons)
+overmind start
 ```
 
-### Using Go
+### TUI only (no daemons)
 
 ```bash
-go install github.com/ETEllis/teamcode@latest
+go build -o agency .
+./agency
 ```
 
-## Building From Source
+### Key commands inside the TUI
 
-```bash
-go build -o teamcode .
+```
+/agency genesis   — natural-language intent → structured org config
+/agency bootstrap — boot a staffed office from a constitution
+/agency status    — inspect running office, actors, schedules
+/agency stop      — graceful shutdown
 ```
 
-## Usage
+### Approval lane
 
-```bash
-# Interactive mode
-./teamcode
+When agents propose actions, the approval panel appears in the right rail automatically. Press `a` to approve, `r` to reject, `↑↓` to navigate.
 
-# Non-interactive mode
-./teamcode -p "Explain this codebase"
+### Bulletin board
 
-# With debug logging
-./teamcode -d
-```
+Performance records (directive→output→score) stream into the messages viewport as agents complete inference cycles. Color-coded score badges shift green→yellow→red.
+
+---
 
 ## Configuration
 
-TeamCode looks for configuration in these locations:
+Primary config: `~/.agency.json` or `.agency.json` in your project root.
 
-- `$HOME/.teamcode.json`
-- `$XDG_CONFIG_HOME/teamcode/.teamcode.json`
-- `./.teamcode.json`
+```jsonc
+{
+  "agency": {
+    "productName": "Agency",
+    "office": {
+      "mode": "staffed",
+      "sharedWorkplace": ".agency/workplace",
+      "autoBoot": true
+    },
+    "redis": {
+      "enabled": true,
+      "address": "localhost:6379"
+    },
+    "schedules": {
+      "defaultCadence": "@every 5m",
+      "timezone": "America/New_York"
+    },
+    "currentConstitution": "coding-office"
+  }
+}
+```
 
-Legacy OpenCode config files are still read as fallbacks:
+Legacy `.teamcode.json` / `.opencode.json` config files are still read as fallbacks for existing installs.
 
-- `$HOME/.opencode.json`
-- `$XDG_CONFIG_HOME/opencode/.opencode.json`
-- `./.opencode.json`
+---
 
-You can also configure providers with environment variables such as `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, `GITHUB_TOKEN`, `OPENROUTER_API_KEY`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AZURE_OPENAI_ENDPOINT`, and `AZURE_OPENAI_API_KEY`.
+## Architecture — Key Files
 
-## Collaboration Tools
+| File | Role |
+|------|------|
+| `internal/agency/daemon_actor.go` | Actor main loop: GIST → routing → proposals → ledger → bus |
+| `internal/agency/types.go` | All domain types including `ScheduleNode`, `ActionProposal`, `WakeSignal` |
+| `internal/agency/gist_core.go` | GIST subprocess manager + elastic stretch |
+| `internal/agency/nested_scheduler.go` | Cron tree with prompt injection |
+| `internal/agency/routing.go` | `ModelRouter`, `CredentialBroker`, 5-gate scoring |
+| `internal/agency/performance.go` | `PerformanceRecord`, `BulletinChannel`, `PublishPerformance` |
+| `internal/agency/runtime.go` | `RuntimeManager`, channel helpers |
+| `internal/tui/components/chat/approval.go` | Approval panel component |
+| `internal/tui/components/chat/bulletin.go` | Bulletin timeline renderer |
+| `internal/app/agency.go` | `AgencyService` — subscriptions, votes, genesis |
+| `internal/db/migrations/` | 6 migrations (schema + agency runtime) |
+| `AGENCY_BLUEPRINT.md` | Full architecture reference (canonical) |
 
-The main coder agent now has first-class collaboration tools:
+---
 
-- `team_bootstrap` - Create a leader-led team with default specialist roles and optional spawned teammates
-- `team_create_context` - Create team with charter and roles
-- `team_add_role` - Add role definitions
-- `team_assign_role` - Assign agents to roles
-- `task_create` - Add tasks to the board
-- `task_move` - Move tasks between columns
-- `handoff_create` - Create task handoffs
-- `handoff_accept` - Accept pending handoffs
-- `inbox_read` - Read your messages
-- `team_message_send` - Send a direct teammate message
-- `team_broadcast` - Send a team-wide broadcast
-- `team_status` - Inspect team, task, member, handoff, and worker state
-- `teammate_spawn` / `teammate_wait` - Launch and monitor persistent teammates
-- `subagent_spawn` / `subagent_wait` - Launch and monitor bounded subagents
+## What's Next
 
-For most coordinated workflows, TeamCode should start with `team_bootstrap` and a leader-led pattern instead of manually stitching roles together one tool at a time.
+### IPC Transport (in progress)
+Unix socket server exposing the live office event stream to local clients (desktop app, CLI tools). Same `WakeSignal` / `LedgerEntry` schema as Redis but over a local socket.
 
-## Memory and Commands
+### macOS Desktop App (in progress)
+Native SwiftUI companion. Real-time office view: iMessage bubbles, bulletin board, approval lanes, agent status. Connects to the Go runtime via IPC socket. macOS-first, iPad companion after.
 
-- Team memory files: `TeamCode.md`, `teamcode.md`
-- Legacy memory files still supported: `OpenCode.md`, `opencode.md`
-- User custom commands: `$HOME/.teamcode/commands/`
-- Project custom commands: `<PROJECT>/.teamcode/commands/`
+### WebSocket Transport
+Remote client event stream — same schema as IPC, enabling web dashboard and mobile companion.
 
-## Compatibility
+---
 
-TeamCode prefers `.teamcode`, `TeamCode.md`, `teamcode.db`, and `teamcode` theme names, but still reads legacy OpenCode config and memory files so existing installs can migrate without breaking.
+## Providers
+
+Agency routes to whichever provider passes its gates. Set any subset of these:
+
+```bash
+export ANTHROPIC_API_KEY=...
+export OPENAI_API_KEY=...
+export GEMINI_API_KEY=...
+export OLLAMA_API_BASE=http://localhost:11434   # Ollama preferred first (local-first)
+```
+
+---
 
 ## License
 
